@@ -1,0 +1,22 @@
+.venv
+venv
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django Media and Static Assets
+# (Keep staticfiles managed via collectstatic; don't commit user uploads)
+media/
+static/
+staticfiles/
+
+# Log files
+*.log
+
+# IDEs and Text Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
