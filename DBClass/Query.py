@@ -348,8 +348,8 @@ class Query:
         else:
             self.__mycursor.execute(sql, row_value)
 
-        if self.__has_transaction == 0:
-            self.__connection.commit()
+        # if self.__has_transaction == 0 or self.__connection.in_atomic_block:
+        #     self.__connection.commit()
 
         return self.__mycursor
 
@@ -460,9 +460,9 @@ class Query:
         sql = "UPDATE " + self.__from_table + " SET " + columns + " WHERE " + " ".join(self.__where_conditions)
         print(sql)
         self.__mycursor.execute(sql, row_value)
-        if self.__has_transaction == 0:
-            self.__connection.commit()
-            self.__connection.close()
+        # if self.__has_transaction == 0:
+        #     self.__connection.commit()
+        #     self.__connection.close()
         return True
 
     def delete(self):
@@ -477,9 +477,9 @@ class Query:
 
         sql = "DELETE FROM " + self.__from_table + " WHERE " + " ".join(self.__where_conditions)
         self.__mycursor.execute(sql)
-        if self.__has_transaction == 0:
-            self.__connection.commit()
-            self.__connection.close()
+        # if self.__has_transaction == 0:
+        #     self.__connection.commit()
+        #     self.__connection.close()
         return True
 
     def executeRawQuery(self, query: str):

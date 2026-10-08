@@ -1,7 +1,0 @@
-CREATE TABLE IF NOT EXISTS expense_categories (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    details TEXT NULL,
-    status TINYINT NOT NULL DEFAULT 1,
-    created_at DATETIME(6) NOT NULL
-);
