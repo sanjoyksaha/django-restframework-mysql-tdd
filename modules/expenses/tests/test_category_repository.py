@@ -10,6 +10,100 @@ class TestCategoryRepository(TestCase):
     def setUp(self):
         self.repository = CategoryRepository()
 
+    def test_repository_can_find_all_categories(self):
+        self.repository.create({
+            "name": "Category 1",
+            "details": "Lorem ipsum",
+            "status": 1,
+            "created_at": datetime.now()
+        })
+
+        self.repository.create({
+            "name": "Category 2",
+            "details": "Lorem ipsum",
+            "status": 1,
+            "created_at": datetime.now()
+        })
+
+        categories = self.repository.findAll()
+        self.assertEqual(len(categories), 2)
+
+    def test_repository_can_limit_categories(self):
+        self.repository.create({
+            "name": "Category 1",
+            "details": "Lorem ipsum",
+            "status": 1,
+            "created_at": datetime.now()
+        })
+
+        self.repository.create({
+            "name": "Category 2",
+            "details": "Lorem ipsum",
+            "status": 1,
+            "created_at": datetime.now()
+        })
+
+        self.repository.create({
+            "name": "Category 3",
+            "details": "Lorem ipsum",
+            "status": 1,
+            "created_at": datetime.now()
+        })
+
+        categories = self.repository.findAll(limit=2)
+        self.assertEqual(len(categories), 2)
+
+    def test_repository_can_paginate_categories(self):
+        self.repository.create({
+            "name": "Category 1",
+            "details": "Lorem ipsum",
+            "status": 1,
+            "created_at": datetime.now()
+        })
+
+        self.repository.create({
+            "name": "Category 2",
+            "details": "Lorem ipsum",
+            "status": 1,
+            "created_at": datetime.now()
+        })
+
+        self.repository.create({
+            "name": "Category 3",
+            "details": "Lorem ipsum",
+            "status": 1,
+            "created_at": datetime.now()
+        })
+
+        categories = self.repository.findAll(limit=2, page=2)
+        self.assertEqual(categories[0]['name'], "Category 3")
+
+    def test_repository_return_empty_list_when_page_is_out_of_range(self):
+        self.repository.create({
+            "name": "Category 1",
+            "details": "Lorem ipsum",
+            "status": 1,
+            "created_at": datetime.now()
+        })
+
+        self.repository.create({
+            "name": "Category 2",
+            "details": "Lorem ipsum",
+            "status": 1,
+            "created_at": datetime.now()
+        })
+
+        self.repository.create({
+            "name": "Category 3",
+            "details": "Lorem ipsum",
+            "status": 1,
+            "created_at": datetime.now()
+        })
+
+        categories = self.repository.findAll(limit=2, page=3)
+        self.assertEqual(categories, [])
+        self.assertEqual(len(categories), 0)
+
     def test_repository_can_be_created(self):
         repository = CategoryRepository()
         self.assertIsNotNone(repository)

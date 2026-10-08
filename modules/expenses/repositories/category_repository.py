@@ -1,6 +1,7 @@
 from pygments.lexers import data
 
 from DBClass.Query import Query
+from config.settings import PER_PAGE
 
 
 class CategoryRepository:
@@ -8,6 +9,9 @@ class CategoryRepository:
 
     def __init__(self, db_alias='default'):
         self.db_alias = db_alias
+
+    def findAll(self, limit: int = PER_PAGE, page: int = 1):
+        return Query(self.db_alias).table(self.__table).limit(limit).skip((page - 1) * limit).getAll()
 
     def create(self, data: dict) -> int:
         return Query(self.db_alias).table(self.__table).insertGetID(data)
