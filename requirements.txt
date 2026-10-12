@@ -8,3 +8,5 @@ factory-boy
 markdown
 django-filter
 django-environ
+drf-spectacular
+drf-yasg

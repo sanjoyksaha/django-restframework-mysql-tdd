@@ -1,3 +1,5 @@
+from datetime import datetime
+from http import HTTPStatus
 from unittest.mock import patch
 
 from django.test import TestCase, Client
@@ -55,8 +57,44 @@ class TestCategoryApi(TestCase):
             },
             format="json",
         )
-
+        # print("response", response.json())
         self.assertEqual(response.status_code, 201)
+
+    @patch('modules.expenses.views.category_views.CategoryService')
+    def test_name_is_required_when_create_category(self, mock_service):
+        mock_service.return_value.create.return_value = 1
+
+        response = self.client.post(
+            self.baseUrl,
+            {
+                # "name": "Food",
+                "details": "Food related expenses",
+                "status": 1,
+                "created_at": datetime.now()
+            },
+            format="json",
+        )
+        res = response.json()
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("name", res)
+
+    @patch('modules.expenses.views.category_views.CategoryService')
+    def test_status_is_required_when_create_category(self, mock_service):
+        mock_service.return_value.create.return_value = 1
+
+        response = self.client.post(
+            self.baseUrl,
+            {
+                "name": "Food",
+                "details": "Food related expenses",
+                # "status": 1,
+                "created_at": datetime.now()
+            },
+            format="json",
+        )
+        res = response.json()
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("status", res)
 
     @patch('modules.expenses.views.category_views.CategoryService')
     def test_can_get_category_details(self, mock_service):
@@ -97,7 +135,7 @@ class TestCategoryApi(TestCase):
         }
         mock_service.return_value.update.return_value = 1
 
-        response = self.client.put(
+        response = self.client.patch(
             f"{self.baseUrl}/1",
             {
                 "name": "Groceries",
@@ -118,10 +156,59 @@ class TestCategoryApi(TestCase):
         )
 
     @patch("modules.expenses.views.category_views.CategoryService")
+    def test_can_update_only_category_name(self, mock_service):
+        mock_service.return_value.find.return_value = {
+            "id": 1,
+            "name": "Food",
+            "details": "Old details",
+            "status": 1,
+        }
+        mock_service.return_value.update.return_value = 1
+
+        response = self.client.patch(
+            f"{self.baseUrl}/1",
+            {
+                "name": "Groceries"
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()["message"],
+            "Category updated successfully",
+        )
+        mock_service.return_value.find.assert_called_once_with(1)
+        mock_service.return_value.update.assert_called_once_with(
+            1,
+            {
+                "name": "Groceries"
+            },
+        )
+
+    @patch("modules.expenses.views.category_views.CategoryService")
+    def test_patch_rejects_invalid_status(self, mock_service):
+        mock_service.return_value.find.return_value = {
+            "id": 1,
+            "name": "Food",
+            "details": "Food expenses",
+            "status": 1,
+        }
+
+        response = self.client.patch(
+            f"{self.baseUrl}/1",
+            {"status": 5},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('status', response.json())
+        mock_service.return_value.update.assert_not_called()
+
+    @patch("modules.expenses.views.category_views.CategoryService")
     def test_returns_404_when_updating_missing_category(self, mock_service):
         mock_service.return_value.find.return_value = {}
 
-        response = self.client.put(
+        response = self.client.patch(
             f"{self.baseUrl}/999",
             {"name": "Groceries", "details": "Updated", "status": 1},
             format="json",
@@ -155,3 +242,24 @@ class TestCategoryApi(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(res['status'], 0)
         mock_service.return_value.delete.assert_not_called()
+
+    @patch("modules.expenses.views.category_views.CategoryService")
+    def test_unexpected_error_returns_generic_500(self, mock_service):
+        mock_service.return_value.find.side_effect = RuntimeError(
+            "Sensitive database details"
+        )
+
+        response = self.client.get(f"{self.baseUrl}/1")
+
+        self.assertEqual(
+            response.status_code,
+            HTTPStatus.INTERNAL_SERVER_ERROR
+        )
+        self.assertEqual(
+            response.json(),
+            {
+                "status": 0,
+                "message": "An unexpected error occurred.",
+            },
+        )
+        self.assertNotIn("Sensitive database details", response.content.decode())

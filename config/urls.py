@@ -16,9 +16,35 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import TemplateView
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+
 from modules.expenses import urls as expenses_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # path(
+    #     "swagger-ui/",
+    #     TemplateView.as_view(
+    #         template_name="swagger-ui.html",
+    #         extra_context={"schema_url": "openapi-schema"},
+    #     ),
+    #     name="swagger-ui",
+    # ),
+    path(
+        "api/schema/",
+        SpectacularAPIView.as_view(),
+        name="schema",
+    ),
+    path(
+        "swagger-ui/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    path(
+        "api/redoc/",
+        SpectacularRedocView.as_view(url_name="schema"),
+        name="redoc",
+    ),
     path('api/v1/expenses/', include(expenses_urls)),
 ]
